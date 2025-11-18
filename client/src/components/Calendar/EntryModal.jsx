@@ -9,17 +9,28 @@ const EntryModal = ({ isOpen, onClose, date, entry, onSave, disabled }) => {
   const [proof, setProof] = useState('');
   const [isWFH, setIsWFH] = useState(false);
   const [ReactQuill, setReactQuill] = useState(null);
+const [cssLoaded, setCssLoaded] = useState(false);
 
-    useEffect(() => {
-    if (isOpen) {
-      Promise.all([
-        import('react-quill'),
-        import('react-quill/dist/quill.snow.css')
-      ]).then(([module]) => {
-        setReactQuill(() => module.default);
-      });
+  // Dynamically import both ReactQuill and its CSS
+  useEffect(() => {
+    if (isOpen && !ReactQuill) {
+      const loadEditor = async () => {
+        try {
+          // Load CSS first
+          await import('react-quill/dist/quill.snow.css');
+          setCssLoaded(true);
+          
+          // Then load the component
+          const module = await import('react-quill');
+          setReactQuill(() => module.default);
+        } catch (error) {
+          console.error('Failed to load ReactQuill:', error);
+        }
+      };
+
+      loadEditor();
     }
-  }, [isOpen]);
+  }, [isOpen, ReactQuill]);
 
   useEffect(() => {
     if (entry) {
@@ -198,24 +209,22 @@ const EntryModal = ({ isOpen, onClose, date, entry, onSave, disabled }) => {
               </div>
 
               {/* Proof/Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Proof/Description
-                </label>
-                <div className="border border-gray-300 rounded-lg overflow-hidden">
-                  <ReactQuill
-                    value={proof}
-                    onChange={setProof}
-                    modules={modules}
-                    readOnly={disabled}
-                    theme="snow"
-                    style={{ minHeight: '120px' }}
-                  />
-                </div>
-                <p className="mt-1 text-xs text-gray-500">
-                  Add any proof or description for this entry. You can include text, images, or links.
-                </p>
-              </div>
+ <div className="border border-gray-300 rounded-lg overflow-hidden">
+    {ReactQuill && cssLoaded ? (
+      <ReactQuill
+        value={proof}
+        onChange={setProof}
+        modules={modules}
+        readOnly={disabled}
+        theme="snow"
+        style={{ minHeight: '120px' }}
+      />
+    ) : (
+      <div className="min-h-[120px] flex items-center justify-center text-gray-500">
+        Loading editor...
+      </div>
+    )}
+  </div>
 
               {/* Allowance Summary */}
               {allowanceInfo && (
