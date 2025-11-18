@@ -15,6 +15,19 @@ export default defineConfig({
   base: './',
   build: {
     outDir: 'dist',
-    sourcemap: false
+    sourcemap: false,
+    // Add rollupOptions to fix react-quill import issue
+    rollupOptions: {
+      external: ['react-quill'],
+      output: {
+        globals: {
+          'react-quill': 'ReactQuill'
+        }
+      }
+    }
+  },
+  // Add optimizeDeps for better development experience
+  optimizeDeps: {
+    include: ['react-quill']
   }
 })
