@@ -2,14 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Dialog } from '@headlessui/react';
 import { X, Home } from 'lucide-react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
 import { ALLOWANCE_TYPES, ALLOWANCE_MAP, canSelectWFH } from '../../utils/constants';
 
 const EntryModal = ({ isOpen, onClose, date, entry, onSave, disabled }) => {
   const [selectedType, setSelectedType] = useState('');
   const [proof, setProof] = useState('');
   const [isWFH, setIsWFH] = useState(false);
+  const [ReactQuill, setReactQuill] = useState(null);
+
+    useEffect(() => {
+    if (isOpen) {
+      Promise.all([
+        import('react-quill'),
+        import('react-quill/dist/quill.snow.css')
+      ]).then(([module]) => {
+        setReactQuill(() => module.default);
+      });
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (entry) {
